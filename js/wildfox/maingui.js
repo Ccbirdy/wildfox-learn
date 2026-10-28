@@ -10,10 +10,101 @@ var UserInfo = {
     score:""
 };
 $().ready(function(){  
-   changePanel('');
+   showMainExplorer();
 });
 
-$(":submit[name='loginSubmit']").click(function() { 
+var normalizeSgfUrl = function(serverPath){
+    return (serverPath || '').replace(/\\/g, '/').replace(/^\.\//, '').replace(/^\.\.\//, '').replace(/^\/+/, '');
+};
+
+var loadRootExplorer = function(){
+    loadSgfDirectory('resource/sgf');
+};
+
+var loadSgfDirectory = function(pathName){
+    if (!pathName || pathName === '') {
+        pathName = 'resource/sgf';
+    }
+    pathName = normalizeSgfUrl(pathName);
+    $.ajax({
+        url:"./src/main.php",
+        type:"GET",
+        data:{
+            action:"getFileList",
+            pathName: pathName
+        },
+        dataType:"json",
+        timeout:"10000",
+        success:function(data){
+            if (data == undefined || data.body == undefined || data.body.fileList == undefined) {
+                showMessage("错误","读取棋谱目录失败。");
+                return;
+            }
+            var folderList = $("#sgfFolderList");
+            var fileList = $("#sgfFileList");
+            folderList.empty();
+            fileList.empty();
+
+            if (pathName !== 'resource/sgf') {
+                var upButton = $('<button type="button" style="display:block; margin-bottom:10px; padding:6px 10px; cursor:pointer;">返回上一级</button>');
+                upButton.click(function(){
+                    var parentPath = pathName.split('/');
+                    parentPath.pop();
+                    var parent = parentPath.join('/');
+                    if (!parent || parent === '') {
+                        parent = 'resource/sgf';
+                    }
+                    loadSgfDirectory(parent);
+                });
+                folderList.append(upButton);
+            }
+
+            for (var i = 0; i < data.body.fileList.length; i++) {
+                (function(){
+                    var item = data.body.fileList[i];
+                    if (!item) return;
+                    var fullPath = pathName + '/' + item;
+                    var btn = $('<button type="button" style="display:block; width:100%; text-align:left; margin-bottom:6px; padding:8px 10px; cursor:pointer;">' + item + '</button>');
+                    btn.click(function(){
+                        var urlPath = normalizeSgfUrl(fullPath);
+                        var isSgfFile = /\.sgf$/i.test(item);
+                        if (isSgfFile) {
+                            loadEidogo('player-container', urlPath);
+                        } else {
+                            loadSgfDirectory(fullPath);
+                        }
+                    });
+
+                    if (/\.sgf$/i.test(item)) {
+                        fileList.append(btn);
+                    } else {
+                        folderList.append(btn);
+                    }
+                })();
+            }
+
+            if (fileList.children().length === 0 && folderList.children().length === 0) {
+                fileList.append('<div style="color:#999;">当前目录没有可用棋谱。</div>');
+            }
+        },
+        error: function(){
+            showMessage("错误","读取棋谱目录失败。请确认路径存在。");
+        }
+    });
+};
+
+var showMainExplorer = function(){
+    $("#loginPanel").hide();
+    $("#contentPanel").show();
+    $("#sgfExplorer").show();
+    loadRootExplorer();
+};
+
+$().ready(function(){  
+   showMainExplorer();
+});
+
+$(':submit[name="loginSubmit"]').click(function() { 
    showMessage('info','clicked'); 
 });
 var doLogin = function(){
@@ -353,23 +444,42 @@ var initEidogo = function(){
     });
 }
 
-var loadEidogo = function(containerID,sgfUrl){
-    var player = new eidogo.Player({
-        container:       containerID, // HTML element id indicating where to put the player
-        theme:           "standard", // "standard" or "compact"
-        sgfUrl:          sgfUrl, // relative URL (within same domain) to SGF file to load 
-        loadPath:        [0, 0], // The location within the game tree to start at
-        mode:            "play", // "play" or "view"
-        showComments:    true,
-        showPlayerInfo:  true,
-        showGameInfo:    true,
-        showTools:       true,
-        showOptions:     true,
-        markCurrent:     true,
-        markVariations:  true,
-        markNext:        false,
-        enableShortcuts: false,
-        problemMode:     false
+var loadEidogo = function(containerID, sgfPath){
+    $.ajax({
+        url:"./src/main.php",
+        type:"GET",
+        data:{
+            action:"getSgfText",
+            pathName: sgfPath
+        },
+        dataType:"json",
+        timeout:"20000",
+        success:function(data){
+            if (data == undefined || data.body == undefined || data.body.sgf == undefined) {
+                showMessage("错误","读取棋谱内容失败。");
+                return;
+            }
+            var player = new eidogo.Player({
+                container:       containerID,
+                theme:           "standard",
+                sgf:             data.body.sgf,
+                loadPath:        [0, 0],
+                mode:            "play",
+                showComments:    true,
+                showPlayerInfo:  true,
+                showGameInfo:    true,
+                showTools:       true,
+                showOptions:     true,
+                markCurrent:     true,
+                markVariations:  true,
+                markNext:        false,
+                enableShortcuts: false,
+                problemMode:     false
+            });
+        },
+        error: function(){
+            showMessage("错误","读取棋谱内容失败，请确认 SGF 文件格式正确。");
+        }
     });
 }
 

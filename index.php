@@ -35,7 +35,7 @@
 
         </div>
         <div class="body">
-            <section class="mainLogin" id ="loginPanel">
+            <section class="mainLogin" id ="loginPanel" style="display:none">
                 <form class="form-4" id="loginForm">
                     <h1>用户登录</h1>
                         <p>
@@ -55,8 +55,27 @@
                 </form>
             </section>
             
-            <section class="mainContent" id ="contentPanel" style="display:none">
-                <div id="menu">
+            <section class="mainContent" id ="contentPanel">
+                <div id="sgfExplorer" style="padding:20px; background:#fff; border-radius:8px; margin:20px;">
+                    <h2 style="margin-bottom:12px;">棋谱选择</h2>
+                    <div style="margin-bottom:12px;">
+                        <button type="button" onclick="loadRootExplorer();" style="padding:8px 14px; cursor:pointer;">重新加载目录</button>
+                    </div>
+                    <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;">
+                        <div style="min-width:220px; flex:1;">
+                            <h3>目录</h3>
+                            <div id="sgfFolderList"></div>
+                        </div>
+                        <div style="min-width:260px; flex:2;">
+                            <h3>棋谱列表</h3>
+                            <div id="sgfFileList"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top:20px; border:1px solid #ddd; padding:12px; min-height:360px; background:#fafafa;">
+                        <div id="player-container"></div>
+                    </div>
+                </div>
+                <div id="menu" style="display:none;">
                     <ul class="level1">
                         <li class="level1-li"><a class="level1-a" href="#url" onclick="changePanel('mainPanel','')">首页</a></li>
                         <li class="level1-li"><a class="level1-a drop" href="#url">打谱<!--[if gte IE 7]><!--></a><!--<![endif]-->

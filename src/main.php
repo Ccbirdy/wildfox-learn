@@ -42,9 +42,17 @@ if ($action == 'getUserInfo') {
 }else if( $action == 'getFileList'){
     $pathName = $_GET['pathName'];
     $fileList = fileOption::getFileList($pathName);
-    $rtn =  json_encode($fileList);
-    
-    $rtn = iconv("GB2312", "UTF-8", $rtn); 
+    $rtn =  json_encode($fileList, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
     echo $rtn;
+}else if( $action == 'getSgfText'){
+    $pathName = $_GET['pathName'];
+    $sgfText = fileOption::readUtf8Text($pathName);
+    $response = array(
+        'body'=>array(
+            'sgf'=>$sgfText
+        ),
+        'status'=>'0000'
+    );
+    echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
 }
 ?>
