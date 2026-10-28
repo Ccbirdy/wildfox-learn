@@ -31,13 +31,23 @@ This repo is a lightweight local Go study viewer built around SGF chess records.
 - Chinese directory names are converted with `iconv` because the project uses localized paths like `《围棋中盘技巧》坂田荣男`.
 - Paths from the frontend are normalized before passing to EidoGo.
 
-## Typical run command
+## Starting the local app (Windows)
+
+Double-click `start-local.bat` in the project root. The launcher:
+- finds `php` on `PATH`, or falls back to `C:\php\php.exe`
+- starts the built-in PHP server on `127.0.0.1:8080`
+- verifies the SGF listing endpoint, then opens `http://127.0.0.1:8080/index.php`
+- detects an unrelated service already using port 8080 and reports the conflict
+
+Close the PHP server window to stop the server. If PHP is installed elsewhere, add its directory to `PATH`.
+
+Manual fallback from the project root:
 ```bash
-php -S localhost:8080
+php -S 127.0.0.1:8080
 ```
 Then open:
 ```text
-http://localhost:8080/index.php
+http://127.0.0.1:8080/index.php
 ```
 
 ## Data folders
@@ -72,14 +82,8 @@ If future AI agents need to modify behavior, they should look at:
 This should reduce the need to re-read the whole repo whenever changing display logic or data loading behavior.
 
 ## Current usage summary
-- Start the local PHP server with:
-  ```bash
-  php -S localhost:8080
-  ```
-- Open:
-  ```text
-  http://localhost:8080/index.php
-  ```
+- On Windows, double-click `start-local.bat`; it starts PHP and opens the page automatically.
+- Manual fallback: run `php -S 127.0.0.1:8080` from the project root and open `http://127.0.0.1:8080/index.php`.
 - The app loads from `resource/sgf` and does not require a login.
 - Select a folder, then select a `.sgf` file to open it directly.
 
